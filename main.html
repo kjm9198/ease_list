@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles_main.css">
+    <title>Grocery List</title>
+</head>
+<body>
+<header>
+    <h1>EaseList</h1>
+</header>
+<main>
+    <section>
+        <h2>Your Groceries</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Status</th>
+                <th hidden>ID</th>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Estimated Price</th>
+                <th>Created At</th>
+                <th>Erase</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Testing the data -->
+            <tr>
+                <td><input type="checkbox" name="itemCheck"></td>
+                <td hidden><input type="hidden" name="itemID" value="1"></td>
+                <td>Apples</td>
+                <td>5</td>
+                <td>$10.00</td>
+                <td>2023-01-01</td>
+                <td><button type="button" onclick="deleteRow(this)">Delete</button></td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="itemCheck"></td>
+                <td hidden><input type="hidden" name="itemID" value="2"></td>
+                <td>Bread</td>
+                <td>2</td>
+                <td>$4.50</td>
+                <td>2023-01-02</td>
+                <td><button type="button" onclick="deleteRow(this)">Delete</button></td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="itemCheck"></td>
+                <td hidden><input type="hidden" name="itemID" value="3"></td>
+                <td>Milk</td>
+                <td>1</td>
+                <td>$2.20</td>
+                <td>2023-01-03</td>
+                <td><button type="button" onclick="deleteRow(this)">Delete</button></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>Add New Grocery</h2>
+        <form>
+            <label for="groceryName">Name:</label>
+            <input type="text" id="groceryName" name="groceryName" required>
+
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" required>
+
+            <label for="estimatedPrice">Estimated Price:</label>
+            <input type="text" id="estimatedPrice" name="estimatedPrice" required>
+
+            <button type="button" onclick="addGrocery()">Add Grocery</button>
+        </form>
+    </section>
+</main>
+
+<div class="notification-bell">&#128276;</div>
+</body>
+</html>
