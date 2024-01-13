@@ -1,14 +1,17 @@
 const express = require('express');
 const mysql = require('mysql');
-const app = express();
-const port = 5000; // Choose a port number
+const bodyParser = require('body-parser'); // Add this line
 
-// Create a MySQL connection
+const app = express();
+const port = 5000;
+
+app.use(bodyParser.json());
+
 const connection = mysql.createConnection({
     host: 'localhost',
-    user: 'your_mysql_username',
-    password: 'your_mysql_password',
-    database: 'your_database_name',
+    user: 'kjm9198',
+    password: '123456',
+    database: 'kjm',
 });
 
 connection.connect((err) => {
@@ -19,15 +22,28 @@ connection.connect((err) => {
     }
 });
 
-// Define your API endpoints here
+// Create a 'groceries' table if it doesn't exist
+const createTableQuery = `
+    CREATE TABLE IF NOT EXISTS groceries (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        quantity INT NOT NULL,
+        price DECIMAL(10, 2) NOT NULL,
+        created_at DATE NOT NULL
+    )
+`;
 
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+connection.query(createTableQuery, (err) => {
+    if (err) {
+        console.error('Error creating table:', err);
+    } else {
+        console.log('Table created or already exists!');
+    }
 });
 
-// Example endpoint to fetch data from a 'users' table
-app.get('/api/users', (req, res) => {
-    const query = 'SELECT * FROM users';
+// Endpoint to fetch all groceries
+app.get('/api/groceries', (req, res) => {
+    const query = 'SELECT * FROM groceries';
 
     connection.query(query, (err, results) => {
         if (err) {
@@ -37,4 +53,45 @@ app.get('/api/users', (req, res) => {
             res.json(results);
         }
     });
+});
+
+app.post('/api/groceries', (req, res) => {
+    const { name, quantity, price } = req.body;
+
+    // Validate input
+    if (!name || !quantity || !price) {
+        return res.status(400).json({ error: 'Please provide all required fields.' });
+    }
+
+    const createdAt = new Date().toISOString().split('T')[0]; // Get today's date
+
+    const insertQuery = 'INSERT INTO groceries (name, quantity, price, created_at) VALUES (?, ?, ?, ?)';
+
+    connection.query(insertQuery, [name, quantity, price, createdAt], (err, result) => {
+        if (err) {
+            console.error('Error adding new grocery:', err);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+
+        // Get the inserted item's ID
+        const insertedId = result.insertId;
+
+        // Retrieve the inserted item from the database
+        const selectQuery = 'SELECT * FROM groceries WHERE id = ?';
+
+        connection.query(selectQuery, [insertedId], (err, results) => {
+            if (err) {
+                console.error('Error retrieving new grocery:', err);
+                return res.status(500).json({ error: 'Internal Server Error' });
+            }
+
+            const newGrocery = results[0];
+            res.status(201).json(newGrocery); // Respond with the newly added grocery item
+        });
+    });
+});
+
+
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
