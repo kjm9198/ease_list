@@ -58,17 +58,6 @@ function GroceryList() {
             });
     };
 
-    function App() {
-        return (
-            <Router>
-                <Routes>
-                    <Route path="/grocery-list" component={GroceryList} />
-                    <Route path="/login" component={Login} />
-                </Routes>
-            </Router>
-        );
-    }
-
     return (
         <div>
             <header>
