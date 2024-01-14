@@ -10,16 +10,32 @@ function Login() {
         // Placeholder for authentication logic
         // Replace this with your actual authentication logic
 
-        // Example: Check if username and password match some predefined values
-        if (username === 'your_username' && password === 'your_password') {
-            // Login successful
-            console.log('Login successful!');
-            // Add logic for actions after successful login (e.g., redirect)
-        } else {
-            // Login failed
-            setError('Invalid username or password');
-        }
+        // Example: Send login request to the server
+        fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username,
+                password,
+            }),
+        })
+            .then((response) => {
+                if (response.ok) {
+                    // Login successful
+                    console.log('Login successful!');
+                    // Add logic for actions after successful login (e.g., redirect)
+                } else {
+                    // Login failed
+                    setError('Invalid username or password');
+                }
+            })
+            .catch((error) => {
+                console.error('Error during login:', error);
+            });
     };
+
 
     return (
         <div className="login-container">

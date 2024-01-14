@@ -1,10 +1,12 @@
 const express = require('express');
 const mysql = require('mysql');
-const bodyParser = require('body-parser'); // Add this line
+const bodyParser = require('body-parser');
+const cors = require('cors'); // Add this line
 
 const app = express();
 const port = 5000;
 
+app.use(cors());
 app.use(bodyParser.json());
 
 const connection = mysql.createConnection({
@@ -41,6 +43,21 @@ connection.query(createTableQuery, (err) => {
     }
 });
 
+// Insert sample data
+const sampleData = [
+    { name: 'Apples', quantity: 21, price: 10.0, created_at: '2023-01-01' },
+    { name: 'Bread', quantity: 2, price: 4.5, created_at: '2023-01-02' },
+    { name: 'Milk', quantity: 1, price: 2.2, created_at: '2023-01-03' },
+];
+
+sampleData.forEach((item) => {
+    const insertSampleDataQuery = 'INSERT INTO groceries (name, quantity, price, created_at) VALUES (?, ?, ?, ?)';
+    connection.query(insertSampleDataQuery, [item.name, item.quantity, item.price, item.created_at], (err) => {
+        if (err) {
+            console.error('Error inserting sample data:', err);
+        }
+    });
+});
 // Endpoint to fetch all groceries
 app.get('/api/groceries', (req, res) => {
     const query = 'SELECT * FROM groceries';
@@ -90,6 +107,33 @@ app.post('/api/groceries', (req, res) => {
         });
     });
 });
+
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+
+    // Validate input
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Please provide both username and password.' });
+    }
+
+    const userQuery = 'SELECT * FROM users WHERE username = ? AND password = ?';
+
+    connection.query(userQuery, [username, password], (err, results) => {
+        if (err) {
+            console.error('Error executing MySQL query:', err);
+            res.status(500).json({ error: 'Internal Server Error' });
+        } else {
+            if (results.length > 0) {
+                // User found, return success
+                res.json({ success: true });
+            } else {
+                // User not found or credentials are incorrect
+                res.status(401).json({ error: 'Invalid username or password' });
+            }
+        }
+    });
+});
+
 
 
 app.listen(port, () => {

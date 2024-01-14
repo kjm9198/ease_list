@@ -1,14 +1,26 @@
-import React, { useState } from 'react';
-import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
-import Login from "./Login";
-
+import React, { useState, useEffect } from 'react';
+import './GroceryList.css';
 function GroceryList() {
     // Sample data for testing
-    const [groceryData, setGroceryData] = useState([
-        { id: 1, name: 'Apples', quantity: 21, price: 10.0, createdAt: '2023-01-01' },
-        { id: 2, name: 'Bread', quantity: 2, price: 4.5, createdAt: '2023-01-02' },
-        { id: 3, name: 'Milk', quantity: 1, price: 2.2, createdAt: '2023-01-03' },
-    ]);
+    const [loggedIn, setLoggedIn] = useState(false);
+    const [groceryData, setGroceryData] = useState([]);
+
+    useEffect(() => {
+        // Placeholder for checking login status
+        // Replace this with your actual logic (e.g., checking a user session)
+        // For now, assume the user is already logged in
+        setLoggedIn(true);
+    }, []);
+
+    useEffect(() => {
+        // Fetch data from the server only if logged in
+        if (loggedIn) {
+            fetch('/api/groceries')
+                .then((response) => response.json())
+                .then((data) => setGroceryData(data))
+                .catch((error) => console.error('Error fetching groceries:', error));
+        }
+    }, [loggedIn]);
     const deleteRow = (id) => {
         const updatedGroceryData = groceryData.filter(item => item.id !== id);
         setGroceryData(updatedGroceryData);
