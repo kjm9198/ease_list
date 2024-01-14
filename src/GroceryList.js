@@ -17,10 +17,14 @@ function GroceryList() {
         if (loggedIn) {
             fetch('/api/groceries')
                 .then((response) => response.json())
-                .then((data) => setGroceryData(data))
+                .then((data) => {
+                    console.log('Fetched data:', data);
+                    setGroceryData(data);
+                })
                 .catch((error) => console.error('Error fetching groceries:', error));
         }
     }, [loggedIn]);
+
     const deleteRow = (id) => {
         const updatedGroceryData = groceryData.filter(item => item.id !== id);
         setGroceryData(updatedGroceryData);
