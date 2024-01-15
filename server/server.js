@@ -94,7 +94,7 @@ app.post("/api/groceries", (req, res) => {
   const createdAt = new Date().toISOString().split("T")[0]; // Get today's date
 
   const insertQuery =
-    "INSERT INTO groceries (name, quantity, price, created_at) VALUES (?, ?, ?, ?, ?)";
+    "INSERT INTO groceries (name, quantity, price, created_at) VALUES (?, ?, ?, ?)";
 
   db.run(insertQuery, [name, quantity, price, createdAt], function (err) {
     if (err) {

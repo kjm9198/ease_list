@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./GroceryList.css";
 
 function GroceryList() {
-  // Sample data for testing
-  const [expiryDateError, setExpiryDateError] = useState("");
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(true);
   const [groceryData, setGroceryData] = useState([
     {
       id: 1,
@@ -23,7 +21,7 @@ function GroceryList() {
   ]);
   useEffect(() => {
     // Placeholder for checking login status
-    setLoggedIn(true);
+    setLoggedIn(false);
 
     // Fetch data from the server only if logged in
     if (loggedIn) {
@@ -57,6 +55,7 @@ function GroceryList() {
       })
       .catch((error) => console.error("Error deleting grocery:", error));
   };
+
   const deleteAllRows = () => {
     fetch("http://localhost:3001/api/groceries", {
       method: "DELETE",
@@ -150,7 +149,7 @@ function GroceryList() {
           </tr>
         ))}
         <tr>
-          <td colSpan="7" style={{ textAlign: "center" }}>
+          <td colSpan="8" style={{ textAlign: "center" }}>
             <button type="button" onClick={deleteAllRows}>
               Delete All
             </button>
@@ -178,6 +177,7 @@ function GroceryList() {
                 <th>Price</th>
                 <th>Created At</th>
                 <th>Erase</th>
+                <th>Update</th>
               </tr>
             </thead>
             <tbody>{renderRows()}</tbody>
