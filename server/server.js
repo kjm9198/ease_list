@@ -1,9 +1,11 @@
 const express = require("express");
+const cors = require("cors");
 const bodyParser = require("body-parser");
+const path = require("path");
 const app = express();
 const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database(
-  "./mydatabase.db",
+  "mydatabase.db",
   sqlite3.OPEN_READWRITE,
   (err) => {
     if (err) return console.error(err);
@@ -11,9 +13,9 @@ const db = new sqlite3.Database(
   },
 );
 
-app.listen(3001);
-
+app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "..", "build")));
 
 const createTableQuery = `
     CREATE TABLE IF NOT EXISTS groceries (
@@ -36,16 +38,16 @@ db.run(createTableQuery, (err) => {
 // Insert sample data into the 'groceries' table
 const sampleData = [
   { name: "Apples", quantity: 21, price: 10.0, created_at: "2023-01-01" },
-  { name: "Bread", quantity: 2, price: 4.5, created_at: "2023-01-02" },
-  { name: "Milk", quantity: 1, price: 2.2, created_at: "2023-01-03" },
-  { name: "Item 4", quantity: 5, price: 3.0, created_at: "2023-01-04" },
-  { name: "Item 5", quantity: 8, price: 1.5, created_at: "2023-01-05" },
-  { name: "Item 6", quantity: 3, price: 2.8, created_at: "2023-01-06" },
-  { name: "Item 7", quantity: 10, price: 6.0, created_at: "2023-01-07" },
-  { name: "Item 8", quantity: 4, price: 4.2, created_at: "2023-01-08" },
-  { name: "Item 9", quantity: 7, price: 2.5, created_at: "2023-01-09" },
-  { name: "Item 10", quantity: 2, price: 8.0, created_at: "2023-01-10" },
-  { name: "Item 11", quantity: 4, price: 8.0, created_at: "2023-01-10" },
+  // { name: "Bread", quantity: 2, price: 4.5, created_at: "2023-01-02" },
+  // { name: "Milk", quantity: 1, price: 2.2, created_at: "2023-01-03" },
+  // { name: "Item 4", quantity: 5, price: 3.0, created_at: "2023-01-04" },
+  // { name: "Item 5", quantity: 8, price: 1.5, created_at: "2023-01-05" },
+  // { name: "Item 6", quantity: 3, price: 2.8, created_at: "2023-01-06" },
+  // { name: "Item 7", quantity: 10, price: 6.0, created_at: "2023-01-07" },
+  // { name: "Item 8", quantity: 4, price: 4.2, created_at: "2023-01-08" },
+  // { name: "Item 9", quantity: 7, price: 2.5, created_at: "2023-01-09" },
+  // { name: "Item 10", quantity: 2, price: 8.0, created_at: "2023-01-10" },
+  // { name: "Item 11", quantity: 4, price: 8.0, created_at: "2023-01-10" },
 ];
 
 sampleData.forEach((item) => {
@@ -61,6 +63,9 @@ sampleData.forEach((item) => {
     },
   );
 });
+
+// Serve static files from the 'build' directory
+app.use(express.static(path.join(__dirname, "..", "build")));
 
 app.get("/api/groceries", (req, res) => {
   const query = "SELECT * FROM groceries";
@@ -112,4 +117,26 @@ app.post("/api/groceries", (req, res) => {
       res.status(201).json(result); // Respond with the newly added grocery item
     });
   });
+});
+
+// Endpoint to delete a grocery item
+app.delete("/api/groceries/:id", (req, res) => {
+  const id = req.params.id;
+
+  // Perform deletion in the database
+  const deleteQuery = "DELETE FROM groceries WHERE id = ?";
+
+  db.run(deleteQuery, [id], (err) => {
+    if (err) {
+      console.error("Error deleting grocery:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+
+    res.json({ success: true });
+  });
+});
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

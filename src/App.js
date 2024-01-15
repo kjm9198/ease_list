@@ -11,7 +11,6 @@ import Login from "./Login";
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(true);
-
   return (
     <Router>
       <div>

@@ -1,18 +1,33 @@
 import React, { useState, useEffect } from "react";
 import "./GroceryList.css";
+
 function GroceryList() {
   // Sample data for testing
   const [loggedIn, setLoggedIn] = useState(false);
-  const [groceryData, setGroceryData] = useState([]);
-
+  const [groceryData, setGroceryData] = useState([
+    {
+      id: 1,
+      name: "Sample Grocery 1",
+      quantity: 3,
+      price: 5.99,
+      created_at: "2023-01-15",
+    },
+    {
+      id: 2,
+      name: "Sample Grocery 2",
+      quantity: 1,
+      price: 2.5,
+      created_at: "2023-01-16",
+    },
+  ]);
   useEffect(() => {
-    setLoggedIn(true); // Placeholder for checking login status
-  }, []);
+    // Placeholder for checking login status
+    setLoggedIn(true);
 
-  useEffect(() => {
     // Fetch data from the server only if logged in
     if (loggedIn) {
-      fetch("/api/groceries")
+      // Update the URL to match your server configuration
+      fetch("http://localhost:3001/api/groceries")
         .then((response) => response.json())
         .then((data) => {
           console.log("Fetched data:", data);
@@ -22,13 +37,50 @@ function GroceryList() {
     }
   }, [loggedIn]);
 
-  const deleteRow = (id) => {
-    const updatedGroceryData = groceryData.filter((item) => item.id !== id);
-    setGroceryData(updatedGroceryData);
+  // const deleteRow = (id) => {
+  //   const updatedGroceryData = groceryData.filter((item) => item.id !== id);
+  //   setGroceryData(updatedGroceryData);
+  //
+  //   console.log(`Deleting row with ID ${id}`);
+  // };
 
-    console.log(`Deleting row with ID ${id}`);
+  const deleteRow = (id) => {
+    // Send a request to the server to delete the grocery item
+    fetch(`/api/groceries/${id}`, {
+      method: "DELETE",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Grocery deleted:", data);
+
+        // Remove the deleted item from the state
+        const updatedGroceryData = groceryData.filter((item) => item.id !== id);
+        setGroceryData(updatedGroceryData);
+      })
+      .catch((error) => console.error("Error deleting grocery:", error));
   };
 
+  const renderRows = () => {
+    return groceryData.map((item) => (
+      <tr key={item.id}>
+        <td>
+          <input type="checkbox" name="itemCheck" />
+        </td>
+        <td hidden>
+          <input type="hidden" name="itemID" value={item.id} />
+        </td>
+        <td>{item.name}</td>
+        <td>{item.quantity}</td>
+        <td>${item.price.toFixed(2)}</td>
+        <td>{item.created_at}</td>
+        <td>
+          <button type="button" onClick={() => deleteRow(item.id)}>
+            Delete
+          </button>
+        </td>
+      </tr>
+    ));
+  };
   const addGrocery = () => {
     // Step 1: Capture input values
     const groceryName = document.getElementById("groceryName").value;
@@ -42,7 +94,7 @@ function GroceryList() {
     }
 
     // Step 3: Send request to the server
-    fetch("/api/groceries", {
+    fetch("http://localhost:3001/api/groceries", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -91,27 +143,7 @@ function GroceryList() {
                 <th>Erase</th>
               </tr>
             </thead>
-            <tbody>
-              {groceryData.map((item) => (
-                <tr key={item.id}>
-                  <td>
-                    <input type="checkbox" name="itemCheck" />
-                  </td>
-                  <td hidden>
-                    <input type="hidden" name="itemID" value={item.id} />
-                  </td>
-                  <td>{item.name}</td>
-                  <td>{item.quantity}</td>
-                  <td>${item.price.toFixed(2)}</td>
-                  <td>{item.created_at}</td>
-                  <td>
-                    <button type="button" onClick={() => deleteRow(item.id)}>
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+            <tbody>{renderRows()}</tbody>
           </table>
         </section>
 
