@@ -14,6 +14,7 @@ const db = new sqlite3.Database(
 );
 
 app.use(cors());
+app.options("*", cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "..", "build")));
 
@@ -27,27 +28,18 @@ const createTableQuery = `
     )
 `;
 
-db.run(createTableQuery, (err) => {
-  if (err) {
-    console.error("Error creating table:", err);
-  } else {
-    console.log("Table created or already exists!");
-  }
-});
-
-// Insert sample data into the 'groceries' table
 const sampleData = [
   { name: "Apples", quantity: 21, price: 10.0, created_at: "2023-01-01" },
-  // { name: "Bread", quantity: 2, price: 4.5, created_at: "2023-01-02" },
-  // { name: "Milk", quantity: 1, price: 2.2, created_at: "2023-01-03" },
-  // { name: "Item 4", quantity: 5, price: 3.0, created_at: "2023-01-04" },
-  // { name: "Item 5", quantity: 8, price: 1.5, created_at: "2023-01-05" },
-  // { name: "Item 6", quantity: 3, price: 2.8, created_at: "2023-01-06" },
-  // { name: "Item 7", quantity: 10, price: 6.0, created_at: "2023-01-07" },
-  // { name: "Item 8", quantity: 4, price: 4.2, created_at: "2023-01-08" },
-  // { name: "Item 9", quantity: 7, price: 2.5, created_at: "2023-01-09" },
-  // { name: "Item 10", quantity: 2, price: 8.0, created_at: "2023-01-10" },
-  // { name: "Item 11", quantity: 4, price: 8.0, created_at: "2023-01-10" },
+  { name: "Bread", quantity: 2, price: 4.5, created_at: "2023-01-02" },
+  { name: "Milk", quantity: 1, price: 2.2, created_at: "2023-01-03" },
+  { name: "Item 4", quantity: 5, price: 3.0, created_at: "2023-01-04" },
+  { name: "Item 5", quantity: 8, price: 1.5, created_at: "2023-01-05" },
+  { name: "Item 6", quantity: 3, price: 2.8, created_at: "2023-01-06" },
+  { name: "Item 7", quantity: 10, price: 6.0, created_at: "2023-01-07" },
+  { name: "Item 8", quantity: 4, price: 4.2, created_at: "2023-01-08" },
+  { name: "Item 9", quantity: 7, price: 2.5, created_at: "2023-01-09" },
+  { name: "Item 10", quantity: 2, price: 8.0, created_at: "2023-01-10" },
+  { name: "Item 11", quantity: 4, price: 8.0, created_at: "2023-01-10" },
 ];
 
 sampleData.forEach((item) => {
@@ -62,6 +54,14 @@ sampleData.forEach((item) => {
       }
     },
   );
+});
+
+db.run(createTableQuery, (err) => {
+  if (err) {
+    console.error("Error creating table:", err);
+  } else {
+    console.log("Table created or already exists!");
+  }
 });
 
 // Serve static files from the 'build' directory
@@ -94,14 +94,13 @@ app.post("/api/groceries", (req, res) => {
   const createdAt = new Date().toISOString().split("T")[0]; // Get today's date
 
   const insertQuery =
-    "INSERT INTO groceries (name, quantity, price, created_at) VALUES (?, ?, ?, ?)";
+    "INSERT INTO groceries (name, quantity, price, created_at) VALUES (?, ?, ?, ?, ?)";
 
   db.run(insertQuery, [name, quantity, price, createdAt], function (err) {
     if (err) {
       console.error("Error adding new grocery:", err);
       return res.status(500).json({ error: "Internal Server Error" });
     }
-
     // Get the inserted item's ID
     const insertedId = this.lastID;
 
@@ -114,16 +113,14 @@ app.post("/api/groceries", (req, res) => {
         return res.status(500).json({ error: "Internal Server Error" });
       }
 
-      res.status(201).json(result); // Respond with the newly added grocery item
+      res.status(201).json(result);
     });
   });
 });
 
-// Endpoint to delete a grocery item
 app.delete("/api/groceries/:id", (req, res) => {
   const id = req.params.id;
 
-  // Perform deletion in the database
   const deleteQuery = "DELETE FROM groceries WHERE id = ?";
 
   db.run(deleteQuery, [id], (err) => {
@@ -133,6 +130,19 @@ app.delete("/api/groceries/:id", (req, res) => {
     }
 
     res.json({ success: true });
+  });
+});
+
+app.delete("/api/groceries", (req, res) => {
+  const deleteAllQuery = "DELETE FROM groceries";
+
+  db.run(deleteAllQuery, (err) => {
+    if (err) {
+      console.error("Error deleting all groceries:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+
+    res.json({ success: true, message: "All groceries deleted successfully." });
   });
 });
 
