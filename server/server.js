@@ -4,12 +4,39 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const app = express();
 const sqlite3 = require("sqlite3").verbose();
-const db = new sqlite3.Database(
+const groceriesDB = new sqlite3.Database(
   "mydatabase.db",
   sqlite3.OPEN_READWRITE,
   (err) => {
     if (err) return console.error(err);
     console.log("Connected to the mydatabase.db SQLite database");
+  },
+);
+
+const loginCredentialDB = new sqlite3.Database(
+  "logincredential.db",
+  sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+  (err) => {
+    if (err) return console.error(err);
+    console.log("Connected to the logincredential.db SQLite database");
+
+    // Create the users table if it doesn't exist
+    loginCredentialDB.run(
+      `
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        password TEXT NOT NULL
+      );
+    `,
+      (tableCreateError) => {
+        if (tableCreateError) {
+          console.error("Error creating table:", tableCreateError);
+        } else {
+          console.log("Table 'users' created or already exists!");
+        }
+      },
+    );
   },
 );
 
@@ -26,6 +53,11 @@ const createTableQuery = `
         price REAL NOT NULL,
         created_at DATE NOT NULL
     )
+     CREATE TABLE IF NOT EXISTS users (
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         username TEXT NOT NULL,
+         password TEXT NOT NULL
+     );
 `;
 
 const sampleData = [
@@ -42,10 +74,27 @@ const sampleData = [
   { name: "Item 11", quantity: 4, price: 8.0, created_at: "2023-01-10" },
 ];
 
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
+
+  const query = "SELECT * FROM users WHERE username = ? AND password = ?";
+
+  groceriesDB.get(query, [username, password], (err, user) => {
+    if (err) {
+      console.error("Error during login:", err);
+      res.status(500).json({ error: "Internal Server Error" });
+    } else if (!user) {
+      res.status(401).json({ error: "Invalid username or password" });
+    } else {
+      res.status(200).json({ success: true, message: "Login successful" });
+    }
+  });
+});
+
 sampleData.forEach((item) => {
   const insertSampleDataQuery =
     "INSERT INTO groceries (name, quantity, price, created_at) VALUES (?, ?, ?, ?)";
-  db.run(
+  groceriesDB.run(
     insertSampleDataQuery,
     [item.name, item.quantity, item.price, item.created_at],
     (err) => {
@@ -56,13 +105,35 @@ sampleData.forEach((item) => {
   );
 });
 
-db.run(createTableQuery, (err) => {
-  if (err) {
-    console.error("Error creating table:", err);
-  } else {
-    console.log("Table created or already exists!");
-  }
+// Sample data for users
+const sampleUsers = [
+  { username: "user1", password: "password1" },
+  { username: "user2", password: "password2" },
+  { username: "user3", password: "password3" },
+];
+
+// Insert sample data into the 'users' table
+sampleUsers.forEach((user) => {
+  const insertUserQuery =
+    "INSERT INTO users (username, password) VALUES (?, ?)";
+  loginCredentialDB.run(
+    insertUserQuery,
+    [user.username, user.password],
+    (err) => {
+      if (err) {
+        console.error("Error inserting sample user:", err);
+      }
+    },
+  );
 });
+
+// groceriesDB.run(createTableQuery, (err) => {
+//   if (err) {
+//     console.error("Error creating table:", err);
+//   } else {
+//     console.log("Table created or already exists!");
+//   }
+// });
 
 // Serve static files from the 'build' directory
 app.use(express.static(path.join(__dirname, "..", "build")));
@@ -82,7 +153,7 @@ app.put("/api/groceries/:id", (req, res) => {
   const updateQuery =
     "UPDATE groceries SET name = ?, quantity = ?, price = ? WHERE id = ?";
 
-  db.run(updateQuery, [name, quantity, price, id], (err) => {
+  groceriesDB.run(updateQuery, [name, quantity, price, id], (err) => {
     if (err) {
       console.error("Error updating grocery:", err);
       res.status(500).json({ error: "Internal Server Error" });
@@ -90,7 +161,7 @@ app.put("/api/groceries/:id", (req, res) => {
       // After updating, fetch the updated data to send back to the client
       const selectQuery = "SELECT * FROM groceries";
 
-      db.all(selectQuery, (err, results) => {
+      groceriesDB.all(selectQuery, (err, results) => {
         if (err) {
           console.error("Error executing SQLite query:", err);
           res.status(500).json({ error: "Internal Server Error" });
@@ -105,7 +176,7 @@ app.put("/api/groceries/:id", (req, res) => {
 app.get("/api/groceries", (req, res) => {
   const query = "SELECT * FROM groceries";
 
-  db.all(query, (err, results) => {
+  groceriesDB.all(query, (err, results) => {
     if (err) {
       console.error("Error executing SQLite query:", err);
       res.status(500).json({ error: "Internal Server Error" });
@@ -131,25 +202,47 @@ app.post("/api/groceries", (req, res) => {
   const insertQuery =
     "INSERT INTO groceries (name, quantity, price, created_at) VALUES (?, ?, ?, ?)";
 
-  db.run(insertQuery, [name, quantity, price, createdAt], function (err) {
-    if (err) {
-      console.error("Error adding new grocery:", err);
-      return res.status(500).json({ error: "Internal Server Error" });
-    }
-    // Get the inserted item's ID
-    const insertedId = this.lastID;
-
-    // Retrieve the inserted item from the database
-    const selectQuery = "SELECT * FROM groceries WHERE id = ?";
-
-    db.get(selectQuery, [insertedId], (err, result) => {
+  groceriesDB.run(
+    insertQuery,
+    [name, quantity, price, createdAt],
+    function (err) {
       if (err) {
-        console.error("Error retrieving new grocery:", err);
+        console.error("Error adding new grocery:", err);
         return res.status(500).json({ error: "Internal Server Error" });
       }
+      // Get the inserted item's ID
+      const insertedId = this.lastID;
 
-      res.status(201).json(result);
-    });
+      // Retrieve the inserted item from the database
+      const selectQuery = "SELECT * FROM groceries WHERE id = ?";
+
+      groceriesDB.get(selectQuery, [insertedId], (err, result) => {
+        if (err) {
+          console.error("Error retrieving new grocery:", err);
+          return res.status(500).json({ error: "Internal Server Error" });
+        }
+
+        res.status(201).json(result);
+      });
+    },
+  );
+});
+
+// Modify your server code to include a new login endpoint
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
+
+  const query = "SELECT * FROM users WHERE username = ? AND password = ?";
+
+  loginCredentialDB.get(query, [username, password], (err, user) => {
+    if (err) {
+      console.error("Error during login:", err);
+      res.status(500).json({ error: "Internal Server Error" });
+    } else if (!user) {
+      res.status(401).json({ error: "Invalid username or password" });
+    } else {
+      res.status(200).json({ success: true, message: "Login successful" });
+    }
   });
 });
 
@@ -158,7 +251,7 @@ app.delete("/api/groceries/:id", (req, res) => {
 
   const deleteQuery = "DELETE FROM groceries WHERE id = ?";
 
-  db.run(deleteQuery, [id], (err) => {
+  groceriesDB.run(deleteQuery, [id], (err) => {
     if (err) {
       console.error("Error deleting grocery:", err);
       return res.status(500).json({ error: "Internal Server Error" });
@@ -171,7 +264,7 @@ app.delete("/api/groceries/:id", (req, res) => {
 app.delete("/api/groceries", (req, res) => {
   const deleteAllQuery = "DELETE FROM groceries";
 
-  db.run(deleteAllQuery, (err) => {
+  groceriesDB.run(deleteAllQuery, (err) => {
     if (err) {
       console.error("Error deleting all groceries:", err);
       return res.status(500).json({ error: "Internal Server Error" });

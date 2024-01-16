@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./GroceryList.css";
+import { Link } from "react-router-dom";
 
 function GroceryList() {
   const [loggedIn, setLoggedIn] = useState(true);
@@ -239,6 +240,11 @@ function GroceryList() {
       <main>
         <section>
           <h2>Your Groceries</h2>
+          {loggedIn && (
+            <Link to="/login" style={{ marginRight: "10px" }}>
+              Logout
+            </Link>
+          )}
           <table>
             <thead>
               <tr>

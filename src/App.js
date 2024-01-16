@@ -8,22 +8,41 @@ import {
 } from "react-router-dom";
 import GroceryList from "./GroceryList";
 import Login from "./Login";
+import Register from "./Register";
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState(true);
+  const [loggedIn, setLoggedIn] = useState(false);
+
   return (
     <Router>
       <div>
         <header>
           <nav>
             {loggedIn ? (
-              <li>
-                <Link to="/grocery">Grocery List</Link>
-              </li>
+              <>
+                <li>
+                  <Link to="/grocery">Grocery List</Link>
+                </li>
+                {/* Add a link for logging out */}
+                <li>
+                  <Link to="/login">Logout</Link>
+                </li>
+              </>
             ) : (
-              <li>
-                <Link to="/login">Login</Link>
-              </li>
+              <>
+                {/* Add a link for registration */}
+                <li>
+                  <Link to="/register">Register</Link>
+                </li>
+                {/* Add a link for guest access */}
+                <li>
+                  <Link to="/guest">Guest</Link>
+                </li>
+                {/* Add a link for login */}
+                <li>
+                  <Link to="/login">Login</Link>
+                </li>
+              </>
             )}
           </nav>
         </header>
@@ -43,6 +62,16 @@ function App() {
                   <Login setLoggedIn={setLoggedIn} />
                 )
               }
+            />
+            {/* Add a route for registration */}
+            <Route
+              path="/register"
+              element={loggedIn ? <Navigate to="/grocery" /> : <Register />}
+            />
+            {/* Add a route for guest access */}
+            <Route
+              path="/guest"
+              element={loggedIn ? <Navigate to="/grocery" /> : <GroceryList />}
             />
           </Routes>
         </main>

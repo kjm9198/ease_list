@@ -7,10 +7,6 @@ function Login() {
   const [error, setError] = useState("");
 
   const login = () => {
-    // Placeholder for authentication logic
-    // Replace this with your actual authentication logic
-
-    // Example: Send login request to the server
     fetch("http://localhost:3001/api/login", {
       method: "POST",
       headers: {
@@ -26,9 +22,12 @@ function Login() {
           // Login successful
           console.log("Login successful!");
           // Add logic for actions after successful login (e.g., redirect)
-        } else {
+        } else if (response.status === 401) {
           // Login failed
           setError("Invalid username or password");
+        } else {
+          // Other errors
+          setError("Error during login");
         }
       })
       .catch((error) => {
