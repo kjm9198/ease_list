@@ -67,6 +67,41 @@ db.run(createTableQuery, (err) => {
 // Serve static files from the 'build' directory
 app.use(express.static(path.join(__dirname, "..", "build")));
 
+// Add a new endpoint for updating data
+app.put("/api/groceries/:id", (req, res) => {
+  const id = req.params.id;
+  const { name, quantity, price } = req.body;
+
+  // Validate input
+  if (!name || !quantity || !price) {
+    return res
+      .status(400)
+      .json({ error: "Please provide all required fields." });
+  }
+
+  const updateQuery =
+    "UPDATE groceries SET name = ?, quantity = ?, price = ? WHERE id = ?";
+
+  db.run(updateQuery, [name, quantity, price, id], (err) => {
+    if (err) {
+      console.error("Error updating grocery:", err);
+      res.status(500).json({ error: "Internal Server Error" });
+    } else {
+      // After updating, fetch the updated data to send back to the client
+      const selectQuery = "SELECT * FROM groceries";
+
+      db.all(selectQuery, (err, results) => {
+        if (err) {
+          console.error("Error executing SQLite query:", err);
+          res.status(500).json({ error: "Internal Server Error" });
+        } else {
+          res.json(results);
+        }
+      });
+    }
+  });
+});
+
 app.get("/api/groceries", (req, res) => {
   const query = "SELECT * FROM groceries";
 

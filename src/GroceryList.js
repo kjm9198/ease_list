@@ -3,6 +3,10 @@ import "./GroceryList.css";
 
 function GroceryList() {
   const [loggedIn, setLoggedIn] = useState(true);
+  const [editingItem, setEditingItem] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editQuantity, setEditQuantity] = useState("");
+  const [editPrice, setEditPrice] = useState("");
   const [groceryData, setGroceryData] = useState([
     {
       id: 1,
@@ -35,45 +39,6 @@ function GroceryList() {
         .catch((error) => console.error("Error fetching groceries:", error));
     }
   }, [loggedIn]);
-
-  const deleteRow = (id) => {
-    // Send a request to the server to delete the grocery item
-    fetch(`http://localhost:3001/api/groceries/${id}`, {
-      method: "DELETE",
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to delete grocery: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Grocery deleted:", data);
-
-        const updatedGroceryData = groceryData.filter((item) => item.id !== id);
-        setGroceryData(updatedGroceryData);
-      })
-      .catch((error) => console.error("Error deleting grocery:", error));
-  };
-
-  const deleteAllRows = () => {
-    fetch("http://localhost:3001/api/groceries", {
-      method: "DELETE",
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to delete all groceries: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("All the groceries deleted:", data);
-        setGroceryData([]);
-      })
-      .catch((error) =>
-        console.log("Error in deleting all the groceries:", error),
-      );
-  };
 
   const addGrocery = () => {
     // Step 1: Capture input values
@@ -125,6 +90,104 @@ function GroceryList() {
         console.error("Error adding new grocery:", error);
       });
   };
+  const editRow = (item) => {
+    // Set the editingItem state to the item being edited
+    setEditingItem(item);
+    // You can also populate the form fields with the existing values if needed
+    setEditName(item.name);
+    setEditQuantity(item.quantity);
+    setEditPrice(item.price);
+  };
+
+  const updateData = () => {
+    if (!editingItem) {
+      console.error("No item selected for editing.");
+      return;
+    }
+
+    // Validate input data
+    if (!editName || !editQuantity || !editPrice) {
+      console.error("Please fill in all fields.");
+      return;
+    }
+
+    fetch(`http://localhost:3001/api/groceries/${editingItem.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: editName,
+        quantity: parseInt(editQuantity),
+        price: parseFloat(editPrice),
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to update grocery: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // Handle server response
+        console.log("Grocery updated:", data);
+
+        // Update the groceryData state with the updated item
+        setGroceryData((prevData) =>
+          prevData.map((item) =>
+            item.id === data.id ? { ...item, ...data } : item,
+          ),
+        );
+
+        // Reset form values and editing state
+        setEditName("");
+        setEditQuantity("");
+        setEditPrice("");
+        setEditingItem(null);
+      })
+      .catch((error) => {
+        console.error("Error updating grocery:", error);
+      });
+  };
+
+  const deleteRow = (id) => {
+    // Send a request to the server to delete the grocery item
+    fetch(`http://localhost:3001/api/groceries/${id}`, {
+      method: "DELETE",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to delete grocery: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Grocery deleted:", data);
+
+        const updatedGroceryData = groceryData.filter((item) => item.id !== id);
+        setGroceryData(updatedGroceryData);
+      })
+      .catch((error) => console.error("Error deleting grocery:", error));
+  };
+
+  const deleteAllRows = () => {
+    fetch("http://localhost:3001/api/groceries", {
+      method: "DELETE",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to delete all groceries: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("All the groceries deleted:", data);
+        setGroceryData([]);
+      })
+      .catch((error) =>
+        console.log("Error in deleting all the groceries:", error),
+      );
+  };
 
   const renderRows = () => {
     return (
@@ -139,11 +202,16 @@ function GroceryList() {
             </td>
             <td>{item.name}</td>
             <td>{item.quantity}</td>
-            <td>${item.price.toFixed(2)}</td>
+            <td>{item.price.toFixed(2)}Zł</td>
             <td>{item.created_at}</td>
             <td>
               <button type="button" onClick={() => deleteRow(item.id)}>
                 Delete
+              </button>
+            </td>
+            <td>
+              <button type="button" onClick={() => editRow(item)}>
+                Edit
               </button>
             </td>
           </tr>
@@ -206,8 +274,45 @@ function GroceryList() {
             </button>
           </form>
         </section>
-      </main>
+        <section>
+          <h2>Edit Grocery</h2>
+          <form>
+            <label htmlFor="editName">Name:</label>
+            <input
+              type="text"
+              id="editName"
+              name="editName"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              required
+            />
 
+            <label htmlFor="editQuantity">Quantity:</label>
+            <input
+              type="number"
+              id="editQuantity"
+              name="editQuantity"
+              value={editQuantity}
+              onChange={(e) => setEditQuantity(e.target.value)}
+              required
+            />
+
+            <label htmlFor="editPrice">Estimated Price:</label>
+            <input
+              type="text"
+              id="editPrice"
+              name="editPrice"
+              value={editPrice}
+              onChange={(e) => setEditPrice(e.target.value)}
+              required
+            />
+
+            <button type="button" onClick={updateData}>
+              Update Grocery
+            </button>
+          </form>
+        </section>
+      </main>
       <div className="notification-bell">&#128276;</div>
     </div>
   );
