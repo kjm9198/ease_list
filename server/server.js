@@ -6,12 +6,33 @@ const app = express();
 const sqlite3 = require("sqlite3").verbose();
 
 const groceriesDB = new sqlite3.Database(
-  // "mydatabase.db",
   "grocerylist.db",
   sqlite3.OPEN_READWRITE,
   (err) => {
     if (err) return console.error(err);
     console.log("Connected to the grocerylist.db SQLite database");
+
+    // Create the groceries table if it doesn't exist
+    groceriesDB.run(
+      `
+      CREATE TABLE IF NOT EXISTS groceries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        name TEXT NOT NULL,
+        quantity INTEGER NOT NULL,
+        price REAL NOT NULL,
+        created_at DATE NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (user_id)
+      );
+    `,
+      (tableCreateError) => {
+        if (tableCreateError) {
+          console.error("Error creating table:", tableCreateError);
+        } else {
+          console.log("Table 'groceries' created or already exists!");
+        }
+      },
+    );
   },
 );
 
@@ -27,7 +48,7 @@ const loginCredentialDB = new sqlite3.Database(
       `
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL,
+        username TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL
       );
     `,
@@ -294,6 +315,22 @@ app.post("/api/groceries", (req, res) => {
       });
     },
   );
+});
+app.post("/api/registration", (req, res) => {
+  const { username, password } = req.body;
+
+  const insertUserQuery =
+    "INSERT INTO users (username, password) VALUES (?, ?)";
+  loginCredentialDB.run(insertUserQuery, [username, password], (err) => {
+    if (err) {
+      console.error("Error creating new user:", err);
+      res.status(500).json({ error: "Internal Server Error" });
+    } else {
+      res
+        .status(201)
+        .json({ success: true, message: "User created successfully" });
+    }
+  });
 });
 app.post("/api/groceries", (req, res) => {
   const { user_id, name, quantity, price } = req.body;
