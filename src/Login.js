@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import "./Login.css";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  const navigate = useNavigate();
   const login = () => {
     fetch("http://localhost:3001/api/login", {
       method: "POST",
@@ -19,22 +20,27 @@ function Login() {
     })
       .then((response) => {
         if (response.ok) {
-          // Login successful
           console.log("Login successful!");
-          // Add logic for actions after successful login (e.g., redirect)
-        } else if (response.status === 401) {
-          // Login failed
-          setError("Invalid username or password");
+          return response.json();
         } else {
-          // Other errors
-          setError("Error during login");
+          throw new Error("Login failed");
         }
+      })
+      .then((data) => {
+        console.log("Data after successful login:", data);
+        navigate("/grocery-list");
       })
       .catch((error) => {
         console.error("Error during login:", error);
+        setError("Invalid username or password");
       });
   };
 
+  // useEffect(() => {
+  //   navigate("/grocery-list");
+  // }, []
+  //
+  // );
   return (
     <div className="login-container">
       <h1>Welcome to EaseList</h1>

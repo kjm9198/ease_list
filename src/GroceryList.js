@@ -11,6 +11,7 @@ function GroceryList() {
   const [groceryData, setGroceryData] = useState([
     {
       id: 1,
+      user_id: 1,
       name: "Sample Grocery 1",
       quantity: 3,
       price: 5.99,
@@ -18,6 +19,7 @@ function GroceryList() {
     },
     {
       id: 2,
+      user_id: 2,
       name: "Sample Grocery 2",
       quantity: 1,
       price: 2.5,
@@ -25,8 +27,9 @@ function GroceryList() {
     },
   ]);
   useEffect(() => {
+    console.log("Inside useEffect in GroceryList");
     // Placeholder for checking login status
-    setLoggedIn(false);
+    setLoggedIn(true);
 
     // Fetch data from the server only if logged in
     if (loggedIn) {
@@ -240,6 +243,8 @@ function GroceryList() {
       <main>
         <section>
           <h2>Your Groceries</h2>
+
+          {/* TODO: make a CSS here for the logout button and change it's place*/}
           {loggedIn && (
             <Link to="/login" style={{ marginRight: "10px" }}>
               Logout

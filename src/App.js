@@ -23,22 +23,18 @@ function App() {
                 <li>
                   <Link to="/grocery">Grocery List</Link>
                 </li>
-                {/* Add a link for logging out */}
                 <li>
                   <Link to="/login">Logout</Link>
                 </li>
               </>
             ) : (
               <>
-                {/* Add a link for registration */}
                 <li>
                   <Link to="/register">Register</Link>
                 </li>
-                {/* Add a link for guest access */}
                 <li>
                   <Link to="/guest">Guest</Link>
                 </li>
-                {/* Add a link for login */}
                 <li>
                   <Link to="/login">Login</Link>
                 </li>
@@ -50,14 +46,15 @@ function App() {
         <main>
           <Routes>
             <Route
-              path="/grocery"
+              path="/grocery-list"
               element={loggedIn ? <GroceryList /> : <Navigate to="/login" />}
             />
+
             <Route
               path="/login"
               element={
                 loggedIn ? (
-                  <Navigate to="/grocery" />
+                  <Navigate to="/grocery-list" />
                 ) : (
                   <Login setLoggedIn={setLoggedIn} />
                 )
@@ -66,13 +63,18 @@ function App() {
             {/* Add a route for registration */}
             <Route
               path="/register"
-              element={loggedIn ? <Navigate to="/grocery" /> : <Register />}
+              element={
+                loggedIn ? <Navigate to="/grocery-list" /> : <Register />
+              }
             />
             {/* Add a route for guest access */}
             <Route
               path="/guest"
-              element={loggedIn ? <Navigate to="/grocery" /> : <GroceryList />}
+              element={
+                loggedIn ? <Navigate to="/grocery-list" /> : <GroceryList />
+              }
             />
+            <Route path="/*" element={<Navigate to="/login" />} />
           </Routes>
         </main>
 
