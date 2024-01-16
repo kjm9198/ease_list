@@ -105,8 +105,12 @@ function GroceryList() {
       return;
     }
 
+    const updatedName = document.getElementById("editName").value;
+    const updatedQuantity = document.getElementById("editQuantity").value;
+    const updatedPrice = document.getElementById("editPrice").value;
+
     // Validate input data
-    if (!editName || !editQuantity || !editPrice) {
+    if (!updatedName || !updatedQuantity || !updatedPrice) {
       console.error("Please fill in all fields.");
       return;
     }
@@ -117,9 +121,9 @@ function GroceryList() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: editName,
-        quantity: parseInt(editQuantity),
-        price: parseFloat(editPrice),
+        name: updatedName,
+        quantity: parseInt(updatedQuantity),
+        price: parseFloat(updatedPrice),
       }),
     })
       .then((response) => {
@@ -140,9 +144,9 @@ function GroceryList() {
         );
 
         // Reset form values and editing state
-        setEditName("");
-        setEditQuantity("");
-        setEditPrice("");
+        document.getElementById("editName").value = "";
+        document.getElementById("editQuantity").value = "";
+        document.getElementById("editPrice").value = "";
         setEditingItem(null);
       })
       .catch((error) => {
