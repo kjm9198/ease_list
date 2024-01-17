@@ -69,7 +69,7 @@ function GroceryList({ user }) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        user_id: 1, // TODO change the number 1 to the one according to the logged in user (user.id)
+        user_id: 1,
         name: groceryName,
         quantity: parseInt(quantity),
         price: parseFloat(estimatedPrice),
@@ -194,7 +194,6 @@ function GroceryList({ user }) {
       );
   };
 
-  // TODO delete this later on its to delete all the logins
   const deleteAllUsers = () => {
     fetch("http://localhost:3001/api/users", {
       method: "DELETE",
@@ -255,7 +254,6 @@ function GroceryList({ user }) {
       <header>
         <h1>EaseList</h1>
         <nav>
-          {/* TODO: make a CSS here for the logout button and change it's place*/}
           {loggedIn && user && (
             <div className="user-info">
               <span>Welcome, {user.username}!</span>

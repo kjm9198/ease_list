@@ -418,7 +418,6 @@ app.delete("/api/groceries", (req, res) => {
   });
 });
 
-// TODO delete this later on its to delete the login ones
 app.delete("/api/users", (req, res) => {
   const deleteAllUsersQuery = "DELETE FROM users";
 
