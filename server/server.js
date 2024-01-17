@@ -76,7 +76,7 @@ const createTableQuery = `
         quantity INTEGER NOT NULL,
         price REAL NOT NULL,
         created_at DATE NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users (id)
+        FOREIGN KEY (user_id) REFERENCES users (user_id)
     );
 `;
 
@@ -264,6 +264,13 @@ groceriesDB.run(createTableQuery, (err) => {
   }
 });
 
+// groceriesDB.run(createTableQuery, (tableCreateError) => {
+//   if (tableCreateError) {
+//     console.error("Error creating table:", tableCreateError);
+//   } else {
+//     console.log("Table 'groceries' created or already exists!");
+//   }
+// });
 groceriesDB.run(createUserTableQuery, (err) => {
   if (err) {
     console.error("Error creating users table:", err);
@@ -274,48 +281,6 @@ groceriesDB.run(createUserTableQuery, (err) => {
 
 // Serve static files from the 'build' directory
 app.use(express.static(path.join(__dirname, "..", "build")));
-
-// Add a new endpoint for updating data
-app.post("/api/groceries", (req, res) => {
-  const { user_id, name, quantity, price } = req.body;
-
-  // Validate input
-  if (!user_id || !name || !quantity || !price) {
-    return res
-      .status(400)
-      .json({ error: "Please provide all required fields." });
-  }
-  const createdAt = new Date().toISOString().split("T")[0]; // Get today's date
-
-  const insertQuery =
-    "INSERT INTO groceries (user_id, name, quantity, price, created_at) VALUES (?, ?, ?, ?, ?)";
-
-  groceriesDB.run(
-    insertQuery,
-    [user_id, name, quantity, price, createdAt],
-    function (err) {
-      if (err) {
-        console.error("Error adding new grocery:", err);
-        return res.status(500).json({ error: "Internal Server Error" });
-      }
-
-      // Get the inserted item's ID
-      const insertedId = this.lastID;
-
-      // Retrieve the inserted item from the database
-      const selectQuery = "SELECT * FROM groceries WHERE id = ?";
-
-      groceriesDB.get(selectQuery, [insertedId], (err, result) => {
-        if (err) {
-          console.error("Error retrieving new grocery:", err);
-          return res.status(500).json({ error: "Internal Server Error" });
-        }
-
-        res.status(201).json(result);
-      });
-    },
-  );
-});
 app.post("/api/registration", (req, res) => {
   const { username, password } = req.body;
 
@@ -400,6 +365,40 @@ app.get("/api/groceries", (req, res) => {
   });
 });
 
+app.put("/api/groceries/:id", (req, res) => {
+  const id = req.params.id;
+  const { name, quantity, price } = req.body;
+
+  // Validate input
+  if (!name || !quantity || !price) {
+    return res
+      .status(400)
+      .json({ error: "Please provide all required fields for updating." });
+  }
+
+  const updateQuery =
+    "UPDATE groceries SET name = ?, quantity = ?, price = ? WHERE id = ?";
+
+  groceriesDB.run(updateQuery, [name, quantity, price, id], function (err) {
+    if (err) {
+      console.error("Error updating grocery:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+
+    // Get the updated item from the database
+    const selectQuery = "SELECT * FROM groceries WHERE id = ?";
+
+    groceriesDB.get(selectQuery, [id], (err, result) => {
+      if (err) {
+        console.error("Error retrieving updated grocery:", err);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+
+      res.status(200).json(result);
+    });
+  });
+});
+
 app.delete("/api/groceries/:id", (req, res) => {
   const id = req.params.id;
 
@@ -425,6 +424,20 @@ app.delete("/api/groceries", (req, res) => {
     }
 
     res.json({ success: true, message: "All groceries deleted successfully." });
+  });
+});
+
+// TODO delete this later on its to delete the login ones
+app.delete("/api/users", (req, res) => {
+  const deleteAllUsersQuery = "DELETE FROM users";
+
+  loginCredentialDB.run(deleteAllUsersQuery, (err) => {
+    if (err) {
+      console.error("Error deleting all users:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+
+    res.json({ success: true, message: "All users deleted successfully." });
   });
 });
 

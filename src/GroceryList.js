@@ -69,19 +69,14 @@ function GroceryList() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        user_id: 1, // TODO change the number 1 to the one according to the logged in user
         name: groceryName,
         quantity: parseInt(quantity),
         price: parseFloat(estimatedPrice),
       }),
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to add grocery: ${response.statusText}`);
-        }
-        return response.json();
-      })
+      .then((response) => response.json())
       .then((data) => {
-        // Step 4: Handle server response
         console.log("New grocery added:", data);
         setGroceryData((prevData) => [...prevData, data]);
 
@@ -94,6 +89,7 @@ function GroceryList() {
         console.error("Error adding new grocery:", error);
       });
   };
+
   const editRow = (item) => {
     // Set the editingItem state to the item being edited
     setEditingItem(item);
@@ -195,6 +191,24 @@ function GroceryList() {
       .catch((error) =>
         console.log("Error in deleting all the groceries:", error),
       );
+  };
+
+  // TODO delete this later on its to delete all the logins
+  const deleteAllUsers = () => {
+    fetch("http://localhost:3001/api/users", {
+      method: "DELETE",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to delete all users: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("All users deleted:", data);
+        // You can add additional logic if needed
+      })
+      .catch((error) => console.error("Error deleting all users:", error));
   };
 
   const renderRows = () => {
@@ -327,8 +341,14 @@ function GroceryList() {
             </button>
           </form>
         </section>
+        <section className="centered-section">
+          <h2>User Management</h2>
+          <button type="button" onClick={deleteAllUsers}>
+            Delete All Users
+          </button>
+        </section>
+        <div className="notification-bell">&#128276;</div>
       </main>
-      <div className="notification-bell">&#128276;</div>
     </div>
   );
 }
