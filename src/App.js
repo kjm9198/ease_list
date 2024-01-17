@@ -3,8 +3,8 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Link,
   Navigate,
+  Link,
 } from "react-router-dom";
 import GroceryList from "./GroceryList";
 import Login from "./Login";
@@ -12,6 +12,7 @@ import Register from "./Register";
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [user] = useState(null);
 
   return (
     <Router>
@@ -21,7 +22,7 @@ function App() {
             {loggedIn ? (
               <>
                 <li>
-                  <Link to="/grocery">Grocery List</Link>
+                  <Link to="/grocery-list">Grocery List</Link>
                 </li>
                 <li>
                   <Link to="/login">Logout</Link>
@@ -30,13 +31,13 @@ function App() {
             ) : (
               <>
                 <li>
-                  <Link to="/register">Register</Link>
-                </li>
-                <li>
-                  <Link to="/guest">Guest</Link>
-                </li>
-                <li>
                   <Link to="/login">Login</Link>
+                </li>
+                <li>
+                  <Link to="/portal">Portal</Link>
+                </li>
+                <li>
+                  <Link to="/register">Register</Link>
                 </li>
               </>
             )}
@@ -47,9 +48,14 @@ function App() {
           <Routes>
             <Route
               path="/grocery-list"
-              element={loggedIn ? <GroceryList /> : <Navigate to="/login" />}
+              element={
+                loggedIn ? (
+                  <GroceryList user={user} />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
             />
-
             <Route
               path="/login"
               element={
@@ -60,25 +66,25 @@ function App() {
                 )
               }
             />
-            {/* Add a route for registration */}
             <Route
               path="/register"
               element={
                 loggedIn ? <Navigate to="/grocery-list" /> : <Register />
               }
             />
-            {/* Add a route for guest access */}
             <Route
-              path="/guest"
+              path="/portal"
               element={
-                loggedIn ? <Navigate to="/grocery-list" /> : <GroceryList />
+                loggedIn ? (
+                  <Navigate to="/grocery-list" />
+                ) : (
+                  <GroceryList user={user} />
+                )
               }
             />
             <Route path="/*" element={<Navigate to="/login" />} />
           </Routes>
         </main>
-
-        <div className="notification-bell">&#128276;</div>
       </div>
     </Router>
   );

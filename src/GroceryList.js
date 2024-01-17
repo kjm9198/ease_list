@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./GroceryList.css";
 import { Link } from "react-router-dom";
 
-function GroceryList() {
+function GroceryList({ user }) {
   const [loggedIn, setLoggedIn] = useState(true);
   const [editingItem, setEditingItem] = useState(null);
   const [editName, setEditName] = useState("");
@@ -69,7 +69,7 @@ function GroceryList() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        user_id: 1, // TODO change the number 1 to the one according to the logged in user
+        user_id: 1, // TODO change the number 1 to the one according to the logged in user (user.id)
         name: groceryName,
         quantity: parseInt(quantity),
         price: parseFloat(estimatedPrice),
@@ -145,6 +145,7 @@ function GroceryList() {
 
         // Reset form values and editing state
         document.getElementById("editName").value = "";
+        document.getElementById("editQuantity").value = "";
         document.getElementById("editQuantity").value = "";
         document.getElementById("editPrice").value = "";
         setEditingItem(null);
@@ -253,17 +254,22 @@ function GroceryList() {
     <div>
       <header>
         <h1>EaseList</h1>
+        <nav>
+          {/* TODO: make a CSS here for the logout button and change it's place*/}
+          {loggedIn && user && (
+            <div className="user-info">
+              <span>Welcome, {user.username}!</span>
+              {/* Add a link or button to logout */}
+              <Link to="/login" style={{ marginRight: "10px" }}>
+                Logout
+              </Link>
+            </div>
+          )}
+        </nav>
       </header>
       <main>
         <section>
           <h2>Your Groceries</h2>
-
-          {/* TODO: make a CSS here for the logout button and change it's place*/}
-          {loggedIn && (
-            <Link to="/login" style={{ marginRight: "10px" }}>
-              Logout
-            </Link>
-          )}
           <table>
             <thead>
               <tr>
@@ -347,7 +353,6 @@ function GroceryList() {
             Delete All Users
           </button>
         </section>
-        <div className="notification-bell">&#128276;</div>
       </main>
     </div>
   );

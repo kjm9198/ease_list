@@ -11,8 +11,6 @@ const groceriesDB = new sqlite3.Database(
   (err) => {
     if (err) return console.error(err);
     console.log("Connected to the grocerylist.db SQLite database");
-
-    // Create the groceries table if it doesn't exist
     groceriesDB.run(
       `
       CREATE TABLE IF NOT EXISTS groceries (
@@ -264,13 +262,6 @@ groceriesDB.run(createTableQuery, (err) => {
   }
 });
 
-// groceriesDB.run(createTableQuery, (tableCreateError) => {
-//   if (tableCreateError) {
-//     console.error("Error creating table:", tableCreateError);
-//   } else {
-//     console.log("Table 'groceries' created or already exists!");
-//   }
-// });
 groceriesDB.run(createUserTableQuery, (err) => {
   if (err) {
     console.error("Error creating users table:", err);

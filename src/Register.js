@@ -30,7 +30,7 @@ function Register() {
       })
       .then((data) => {
         console.log("Data after successful registration:", data);
-        navigate("/login");
+        navigate("/grocery-list");
       })
       .catch((error) => {
         console.error("Error during registration:", error);
@@ -40,7 +40,8 @@ function Register() {
 
   return (
     <div className="login-container">
-      <h1>Register for EaseList</h1>
+      <h1>Welcome to EaseList!</h1>
+      <h1>Register for effortless shopping.</h1>
       <form id="registerForm">
         <label htmlFor="username">Username:</label>
         <input

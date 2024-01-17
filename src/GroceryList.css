@@ -15,6 +15,32 @@ header {
 
 main {
   padding: 20px;
+  min-height: 400px;
+}
+
+nav {
+  background-color: #479b69; /* Dark background color */
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+nav li {
+  display: inline-block;
+  margin-right: 15px;
+}
+
+nav li a {
+  text-decoration: none;
+  color: #ecf0f1;
+  font-size: 18px;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+nav li a:hover {
+  background-color: #d3d3d3;
 }
 
 section {
@@ -65,7 +91,7 @@ input, select {
 
 button {
   padding: 12px;
-  background-color: #577760;
+  background-color: #479b69; /* Updated color for all buttons */
   color: white;
   border: none;
   cursor: pointer;
@@ -73,20 +99,7 @@ button {
 }
 
 button:hover {
-  background-color: #98CCA7;
-}
-
-.notification-bell {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  font-size: 24px;
-  color: white;
-  cursor: pointer;
-}
-
-.notification-bell:hover {
-  color: #555;
+  background-color: #479b69; /* Hover effect color for all buttons */
 }
 
 .centered-section {
@@ -94,9 +107,9 @@ button:hover {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-top: 20px; /* Add margin if needed */
+  margin-top: 20px;
 }
 
 .centered-section button {
-  margin-top: 10px; /* Add margin between the heading and the button if needed */
+  margin-top: 10px;
 }

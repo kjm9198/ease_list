@@ -38,12 +38,10 @@ function Login() {
 
   // useEffect(() => {
   //   navigate("/grocery-list");
-  // }, []
-  //
-  // );
+  // }, []);
   return (
     <div className="login-container">
-      <h1>Welcome to EaseList</h1>
+      <h1>Welcome back to EaseList! Your groceries, your way.</h1>
       <form id="loginForm">
         <label htmlFor="username">Username:</label>
         <input
